@@ -7,6 +7,9 @@ package Servlet_TP2;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.LinkedList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -34,8 +37,8 @@ public class StateChoise extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-           response.setContentType("text/html;charset=UTF-8");
+            throws ServletException, IOException, DAOException {
+        response.setContentType("text/html;charset=UTF-8");
         DAO dao = new DAO(DataSourceFactory.getDataSource());
         String state = request.getParameter("state");
         try (PrintWriter out = response.getWriter()) {
@@ -47,6 +50,20 @@ public class StateChoise extends HttpServlet {
             out.println("</head>");
             out.println("<body>");
             out.println("<h1>Servlet ShowClientState at " + request.getContextPath() + "</h1>");
+           try {
+                
+                LinkedList<String> StatesList = dao.listOfState();
+                out.println("<form action='ShowClientState'>");
+                out.println("<select name='state'>");
+                for (String s : StatesList) {
+                    out.printf("<option value= %s>" + s + "</option>", s);
+                }
+                out.println("</select>");
+                out.println("<input type='submit'>");
+                out.println("</form>");
+            } catch (Exception e) {
+                out.printf("Erreur : %s", e.getMessage());
+            }
             if (!state.isEmpty()) {
                 state = state.toUpperCase();
                 out.println("<p>Les clients aux : " + state + "</p>");
@@ -63,7 +80,7 @@ public class StateChoise extends HttpServlet {
             } catch (DAOException ex) {
                 out.println("<p>" + ex + "</p>");
             }
-
+            out.printf("<hr><a href='%s'>Retour au menu</a>", request.getContextPath());
             out.println("</body>");
             out.println("</html>");
         }
@@ -81,7 +98,11 @@ public class StateChoise extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (DAOException ex) {
+            Logger.getLogger(StateChoise.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -95,7 +116,11 @@ public class StateChoise extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (DAOException ex) {
+            Logger.getLogger(StateChoise.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
